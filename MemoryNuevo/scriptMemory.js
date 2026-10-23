@@ -1,135 +1,109 @@
-let btnInicio = document.querySelector("button");
-
+let miBoton = document.querySelector("button");
 let miGaleria = document.querySelector(".galeria");
-let misImagenes;
+let columnas;
+let filas;
 
-var numGiradas = 0; // puede valer 0,1,2
-var cartaGirada1;
-var cartaGirada2;
-const cartas = [];
-const cartaTapada = "imagenes/carta memory reves.png"
-var fin = 3;
-var filas;
-var columnas;
+// variables de estado del juego
+let numGiradas = 0;
+let cartaGirada1;
+let cartaGirada2;
+let cartaTapada = "imagenes/reversoCarta.png";
+let cartas = ["imagenes/memory1.png", "imagenes/memory2.png", "imagenes/memory3.png"];
+let fin; // parejas pendientes
 
+// mezcla un array (Fisher-Yates)
+function barajar(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
 
-//Cuando inicio el juego pido el num de columnas y filas
-btnInicio.onclick = function () {
-    //Muestro un prompt pidiendo el numero de columnas, max 6
+// comprueba que el valor introducido es un entero entre 1 y 6
+function valido(valor) {
+    return valor !== null && valor.trim() !== "" &&
+        Number.isInteger(Number(valor)) && Number(valor) >= 1 && Number(valor) <= 6;
+}
+
+miBoton.onclick = function () {
+    // desaparece el boton y deja de ser clicable
+    miBoton.style.transition = "opacity 2s ease-in-out";
+    miBoton.style.opacity = "0";
+    miBoton.style.pointerEvents = "none";
+
+    // numero de columnas
+    let entrada;
     do {
-        columnas = prompt("Numero de Columnas (max 6)");
-    } while (isNaN(columnas) || columnas > 6 || columnas < 1);
+        entrada = prompt("Introduce el numero de columnas (max 6):");
+    } while (!valido(entrada));
+    columnas = Number(entrada);
 
-    //Muestro un prompt pideindo el numero de filas. max 6
-    //Tengo también que comprobar que filas*columnas de un numero par de cartas, si no vuelvo a pedir el numero de filas.
-    let numParCartas = false;
-    while (!numParCartas) {
-        //Muestro un prompt pidiendo el numero de filas, max 6
-        do {
-            filas = prompt("Numero de Filas (max 6)");
-        } while (isNaN(filas) || filas > 6 || filas < 1);
-        if ((filas * columnas) % 2 === 0) numParCartas = true;
+    // numero de filas (el total de cartas debe ser par)
+    do {
+        entrada = prompt("Introduce el numero de filas (max 6):");
+    } while (!valido(entrada) || (Number(entrada) * columnas) % 2 !== 0);
+    filas = Number(entrada);
+
+    // reinicio el estado del juego
+    numGiradas = 0;
+    fin = (filas * columnas) / 2;
+
+    // construyo la baraja: cada imagen dos veces, y barajada
+    let baraja = [];
+    for (let p = 0; p < fin; p++) {
+        let ruta = cartas[p % cartas.length];
+        baraja.push(ruta, ruta);
     }
+    barajar(baraja);
 
-
-    //Inicializo variables para el juego
-    fin = filas * columnas / 2;
-    //Creo la estructura de datos con las parejas de cartas escondidas
-    for (let i = 0; i < (filas * columnas / 2); i++) {
-        cartas[i] = `imagenes/memory${i + 1}.png`;
-        cartas[i + (filas * columnas / 2)] = `imagenes/memory${i + 1}.png`;
-    }
-    //Mezclo las cartas escondidas
-    cartas.sort(() => Math.random() - 0.5);
-
-    //Hago desaparecer el botón
-    btnInicio.style.opacity = "0";
-    btnInicio.style.transition = "opacity 2s ease-in-out";
-
-
-    //Hago aparecer la regilla con las imagenes
-    //Modifico el DOM (el HTML) para insertar en el html la rejilla de cartas en el contenedor div con class galeria
-    //Modifico el estilo de galeria para que use el numero de columnas introducidas por el usuario
-
+    // la rejilla usa el numero de columnas elegido
     miGaleria.style.gridTemplateColumns = `repeat(${columnas}, 1fr)`;
 
-    // Creo columnas*filas imagenes
-    for (let i = 0; i < (filas * columnas); i++) {
+    for (let i = 0; i < filas * columnas; i++) {
         let nuevaImg = document.createElement("img");
-        // Le asignamos sus atributos 
         nuevaImg.src = cartaTapada;
 
-        // Añado el evento click a la imágen
         nuevaImg.onclick = function () {
-
-            //Compruebo si no he girado todavía ninguna carta
             if (numGiradas === 0) {
-                //Giro una carta y pongo al dia el estado del juego
-                nuevaImg.setAttribute("src", cartas[i]);
+                nuevaImg.src = baraja[i];
                 numGiradas = 1;
                 cartaGirada1 = nuevaImg;
                 nuevaImg.style.pointerEvents = "none";
             } else if (numGiradas === 1) {
-                nuevaImg.setAttribute("src", cartas[i]);
+                nuevaImg.src = baraja[i];
                 numGiradas = 2;
                 cartaGirada2 = nuevaImg;
                 nuevaImg.style.pointerEvents = "none";
-            }
-            //compruebo si tengo dos cartas giradas y tengo que hacer algo
-            if (numGiradas === 2) {
-                // si hay dos cartas iguales las elimino
+
                 if (cartaGirada1.src === cartaGirada2.src) {
-                    //sonido
-                    let sonidoAplausos = new Audio('sonidos/aplausos.mp3');
-                    sonidoAplausos.play();
-                    //Desvanecer
-                    cartaGirada1.style.opacity = "0";
-                    cartaGirada1.style.transition = "opacity 2s ease-in-out";
-                    cartaGirada2.style.opacity = "0";
-                    cartaGirada2.style.transition = "opacity 2s ease-in-out";
+                    // pareja encontrada
+                    fin--;
+                    numGiradas = 0;
 
-                    //marco un acierto menos hacia el fin
-                    fin = fin - 1;
-
+                    if (fin === 0) {
+                        setTimeout(function () {
+                            alert("HAS TERMINADO. CIAO");
+                            // borro las imgs del contenedor
+                            miGaleria.replaceChildren();
+                            // aparece el boton de inicio
+                            miBoton.style.opacity = "1";
+                            miBoton.style.pointerEvents = "auto";
+                        }, 1000);
+                    }
                 } else {
-                    let sonidoFallo = new Audio('sonidos/fallo.mp3');
-                    sonidoFallo.play();
-
-                    //Espero 2 segundos y tapo las cartas
-                    setTimeout(() => {
+                    // se vuelven a tapar tras un tiempo
+                    setTimeout(function () {
+                        cartaGirada1.src = cartaTapada;
+                        cartaGirada2.src = cartaTapada;
                         cartaGirada1.style.pointerEvents = "auto";
                         cartaGirada2.style.pointerEvents = "auto";
-
-                        cartaGirada1.setAttribute("src", cartaTapada)
-                        cartaGirada2.setAttribute("src", cartaTapada)
-
-                    }, 2000);
-
+                        numGiradas = 0;
+                    }, 1000);
                 }
-                //reseteo las varialbles
-                numGiradas = 0;
-
             }
+        };
 
-
-            //Compruebo si he terminado
-            if (fin === 0) {
-                setTimeout(() => {
-                    alert("HAS TERMINADO. CIAO");
-                }, 2000);
-
-                //Borro del DOM las imagenes del contenedor div
-                miGaleria.replaceChildren();
-
-                //Vuelvo a hacer aparecer el boton de inico
-                btnInicio.style.opacity = "1";
-            }
-
-        }
-
-        // Metemos la nueva imagen al final del div galeria 
         miGaleria.appendChild(nuevaImg);
-    };
-
-
+    }
 };
