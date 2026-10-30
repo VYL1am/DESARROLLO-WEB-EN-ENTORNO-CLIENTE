@@ -6,13 +6,22 @@
 </head>
 
 <body>
-    <h1 id="titulo">Pincha el boton para cambiar la imagen</h1>
-
-    <img src="https://thumbs.dreamstime.com/b/sistema-pobre-de-la-colecci%C3%B3n-del-icono-del-mendigo-42265265.jpg"
-        alt="pobre" width="500" height="300">
-
-    <p id="texto">Si, si... este de aquí.</p>
-    <button id="miBoton">Cambiar</button>
+    <table>
+        <tr>
+            <td>
+                <input type="text" id="palabra" placeholder="Escribe una palabra">
+                <button id="miBoton">Buscar</button>
+            </td>
+        </tr>
+        <tr>
+            <td id="texto">Escribe una palabra y pulsa Buscar.</td>
+        </tr>
+        <tr>
+            <td>
+                <img id="imagen" alt="Pictograma" style="display:none">
+            </td>
+        </tr>
+    </table>
 </body>
 <script src="script.js"></script>
 
