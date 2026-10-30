@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Memory ARASAAC</title>
+
+    <style>
+        body {
+            background: #fff;
+            color: #000;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        .galeria {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 900px;
+            margin: 30px auto;
+        }
+
+        .galeria img {
+            width: 100%;
+            height: 150px;
+            object-fit: contain;
+            background: #fff;
+            border: 1px solid #000;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Memory con pictogramas de ARASAAC</h1>
+    <button type="button" id="btnInicio">Crea Rejilla Memory</button>
+    <p id="estado"></p>
+    <div class="galeria"></div>
+    <script src="scriptMemory.js"></script>
+</body>
+
+</html>
